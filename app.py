@@ -19,6 +19,10 @@ os.makedirs("outputs", exist_ok=True)
 
 
 @app.get("/")
+def read_root():
+    return {"message": "YOLO detection API is live!"}
+
+@app.get("/")
 def home():
     return {"message": "🌊 Marine Debris YOLO Detection API is running!"}
 
