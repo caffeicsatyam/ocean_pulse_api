@@ -10,17 +10,16 @@ import uuid
 app = FastAPI(title="Marine Debris Detection API")
 
 # --- Load YOLO model ---
-MODEL_PATH = r"model\best.pt"   # ✅ change this if your model is in another folder
+MODEL_PATH = "model/best.pt"   # Using forward slashes for cross-platform compatibility
 model = YOLO(MODEL_PATH)
 
-# --- Create folders ---
-os.makedirs("uploads", exist_ok=True)
-os.makedirs("outputs", exist_ok=True)
+# --- Create folders with proper permissions ---
+for folder in ["uploads", "outputs"]:
+    os.makedirs(folder, exist_ok=True)
+    # Ensure proper permissions on Linux
+    if os.name == 'posix':
+        os.chmod(folder, 0o755)
 
-
-@app.get("/")
-def read_root():
-    return {"message": "YOLO detection API is live!"}
 
 @app.get("/")
 def home():
@@ -76,7 +75,7 @@ async def predict(file: UploadFile = File(...)):
     return {
         "file_type": "image" if is_image else "video",
         "detections": detections,
-        "output_url": f"http://127.0.0.1:8000/output/{os.path.basename(output_file)}"
+        "output_url": f"/output/{os.path.basename(output_file)}"  # Using relative URL
     }
 
 
@@ -96,3 +95,8 @@ def get_output(filename: str):
 def upload_ui():
     with open("templates/index.html", "r") as f:
         return f.read()
+    
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
