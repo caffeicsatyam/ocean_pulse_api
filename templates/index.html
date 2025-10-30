@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marine Debris Detection 🌊</title>
+</head>
+<body style="font-family: sans-serif; text-align:center;">
+  <h2>Upload Image or Video for Detection</h2>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" accept="image/*,video/*" required><br><br>
+    <button type="submit">Detect</button>
+  </form>
+  <h3 id="result"></h3>
+  <img id="outputImage" style="max-width:80%;display:none;">
+  <video id="outputVideo" style="max-width:80%;display:none;" controls></video>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const fileInput = form.querySelector('input[name="file"]');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      const res = await fetch('/predict/', { method: 'POST', body: formData });
+      const data = await res.json();
+      document.getElementById('result').innerText = JSON.stringify(data.detections, null, 2);
+
+      if (data.file_type === 'image') {
+        document.getElementById('outputVideo').style.display = 'none';
+        document.getElementById('outputImage').style.display = 'block';
+        document.getElementById('outputImage').src = data.output_url;
+      } else {
+        document.getElementById('outputImage').style.display = 'none';
+        document.getElementById('outputVideo').style.display = 'block';
+        document.getElementById('outputVideo').src = data.output_url;
+      }
+    };
+  </script>
+</body>
+</html>
